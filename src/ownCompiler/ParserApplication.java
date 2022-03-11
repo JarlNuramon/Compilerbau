@@ -13,6 +13,7 @@ public class ParserApplication {
 	public static void main(String[] args) {
 		try{
 			List<String> lines = Files.lines(Paths.get("Code.sdk"),StandardCharsets.UTF_8).toList();
+			new SDKParser().parseFile(lines);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
