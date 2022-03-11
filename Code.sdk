@@ -1,0 +1,9 @@
+fun main {
+	let f  = methode 2
+	
+}
+
+fun methode a {
+	let d = 5 + a 
+	d;
+}
