@@ -2,7 +2,7 @@ package ownCompiler;
 
 public enum Function {
 
-	PROGRAMM,
+	PROGRAMM(""),
 	FUNCTION,
 	PARAMETER_LIST,
 	EXPRESSION,
@@ -12,4 +12,10 @@ public enum Function {
 	OPERATOR,
 	FUNCTION_CALL,
 	EXPRESSION_LIST
+	
+	public final String regex;
+	
+	private Function(String regex) {
+        this.regex = regex;
+    }
 }
