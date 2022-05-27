@@ -7,6 +7,8 @@ package professorstuff;/*
 
 */
 
+import ownCompiler.Semantic;
+
 class Operator extends Semantic {
     //-------------------------------------------------------------------------
     // operator -> (expression)

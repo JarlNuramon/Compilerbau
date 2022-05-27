@@ -7,6 +7,8 @@ package professorstuff;/*
 
 */
 
+import ownCompiler.Semantic;
+
 class Term extends Semantic {
     // term->term rightTerm
     // term.f=rightTerm.f(term.f)

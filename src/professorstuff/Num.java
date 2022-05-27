@@ -10,6 +10,8 @@ package professorstuff;/*
 
 */
 
+import ownCompiler.Semantic;
+
 class Num extends Semantic {
 
     //-------------------------------------------------------------------------

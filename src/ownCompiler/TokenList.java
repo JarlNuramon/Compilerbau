@@ -1,4 +1,4 @@
-package professorstuff;/*
+package ownCompiler;/*
 	interface professorstuff.TokenList
 
 	Praktikum Algorithmen und Datenstrukturen

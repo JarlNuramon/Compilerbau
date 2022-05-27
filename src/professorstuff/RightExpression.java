@@ -7,6 +7,8 @@ package professorstuff;/*
 
 */
 
+import ownCompiler.Semantic;
+
 class RightExpression extends Semantic {
     //-------------------------------------------------------------------------
     // rightExpression -> '+' term rightExpression

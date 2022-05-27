@@ -1,11 +1,9 @@
-package professorstuff;
+package ownCompiler;
 
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import ownCompiler.State;
 
 public abstract class Scanner implements TokenList {
 

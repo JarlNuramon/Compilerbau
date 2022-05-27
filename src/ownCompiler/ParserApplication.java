@@ -1,23 +1,21 @@
 package ownCompiler;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.util.List;
-
 public class ParserApplication {
 
-	
-	public static void main(String[] args) {
-		try{
-			List<String> lines = Files.lines(Paths.get("Code.sdk"),StandardCharsets.UTF_8).toList();
-			new SDKParser().parseFile(lines);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-	}
+    public static void main(String args[]) {
+
+	SyntaxTree parseTree = new SyntaxTree(TokenList.PROGRAM);
+
+	SDKParser parser = new SDKParser(parseTree);
+
+	// Einlesen der Datei
+	if (parser.readInput("testdatei_arithmetik.txt"))
+	    if (parser.lexicalAnalysis())
+		if (parser.expression(parseTree) && parser.inputEmpty()) {
+		    parseTree.printSyntaxTree(0);
+		} else
+		    System.out.println("Fehler im Ausdruck");
+	    else
+		System.out.println("Fehler in lexikalischer Analyse");
+    }// main
 }
