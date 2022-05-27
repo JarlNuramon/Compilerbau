@@ -42,7 +42,13 @@ public class SDKParser extends SDKScanner {
 	    else
 		// program -> function (analog zum Epsilon Fall)
 		return true;
+	return false;
     }// program
+
+    private boolean function(SyntaxTree insertSubtree) {
+	// TODO Auto-generated method stub
+	return false;
+    }
 
     // -------------------------------------------------------------------------
     // expression -> term rightExpression
@@ -164,9 +170,9 @@ public class SDKParser extends SDKScanner {
     boolean match(byte[] matchSet, SyntaxTree sT) {
 	SyntaxTree node;
 	for (int i = 0; i < matchSet.length; i++)
-	    if (tokenStream.get(pointer).token == matchSet[i]) {
+	    if (tokenStream.get(pointer).token.getToken() == matchSet[i]) {
 		// gefundenes Token in den Syntaxbaum eintragen
-		sT.insertSubtree(tokenStream.get(pointer).token);
+		sT.insertSubtree(tokenStream.get(pointer).token.getToken());
 		pointer++; // Eingabepointer auf das nächste Zeichen setzen
 		return true;
 	    }
@@ -180,7 +186,7 @@ public class SDKParser extends SDKScanner {
     // -------------------------------------------------------------------------
     boolean lookAhead(byte[] aheadSet) {
 	for (int i = 0; i < aheadSet.length; i++)
-	    if (tokenStream.get(pointer + 1).token == aheadSet[i])
+	    if (tokenStream.get(pointer + 1).token.getToken() == aheadSet[i])
 		return true;
 	return false;
     }// lookAhead
@@ -216,7 +222,7 @@ public class SDKParser extends SDKScanner {
     // -------------------------------------------------------------------------
     void syntaxError(String s) {
 	char z;
-	if (tokenStream.get(pointer).token == EOF)
+	if (tokenStream.get(pointer).token.getToken() == EOF)
 	    System.out.println("Syntax Fehler in Zeile " + tokenStream.get(pointer).line + ": " + "EOF");
 	else
 	    System.out.println(
