@@ -8,9 +8,6 @@ public class SDKParser extends SDKScanner {
     private int pointer;
     // Zeiger auf das Ende der Eingabe
     private int maxPointer;
-    // Eingabe zeichenweise abgelegt
-    // private char input[];
-    // Syntaxbaum
     private SyntaxTree parseTree;
 
     // -------------------------------------------------------------------------
@@ -34,18 +31,47 @@ public class SDKParser extends SDKScanner {
     // -------------------------------------------------------------------------
     boolean program(SyntaxTree sT) {
 	byte[] identSet = { IDENT };
-	// program -> function ...
-	if (function(sT.insertSubtree(FUNCTION)))
-	    // program -> function program
-	    if (lookAhead(identSet))
-		return program(sT.insertSubtree(PROGRAM));
+	byte[] funSet = { FUNCTION };
+	if (lookAhead(funSet))
+	    if (function(sT.insertSubtree(FUNCTION)))
+		// program -> function program
+		if (lookAhead(identSet))
+		    return program(sT.insertSubtree(PROGRAM));
+		else
+		    // program -> function (analog zum Epsilon Fall)
+		    return true;
 	    else
-		// program -> function (analog zum Epsilon Fall)
-		return true;
+		return expression(sT.insertSubtree(EXPRESSION));
+
 	return false;
     }// program
 
-    private boolean function(SyntaxTree insertSubtree) {
+    private boolean function(SyntaxTree subtree) {
+	return fun(subtree) && ident(subtree) && parameterlist(subtree) && funOpen(subtree) && expression(subtree)
+		&& funClose(subtree);
+    }
+
+    private boolean funClose(SyntaxTree subtree) {
+	// TODO Auto-generated method stub
+	return false;
+    }
+
+    private boolean fun(SyntaxTree subtree) {
+	// TODO Auto-generated method stub
+	return false;
+    }
+
+    private boolean funOpen(SyntaxTree subtree) {
+	// TODO Auto-generated method stub
+	return false;
+    }
+
+    private boolean parameterlist(SyntaxTree subtree) {
+	// TODO Auto-generated method stub
+	return false;
+    }
+
+    private boolean ident(SyntaxTree subtree) {
 	// TODO Auto-generated method stub
 	return false;
     }
