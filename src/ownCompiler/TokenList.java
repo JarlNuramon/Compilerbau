@@ -9,7 +9,7 @@ package ownCompiler;/*
 	zur Verf�gung.
 */
 
-interface TokenList {
+public interface TokenList {
     // Konstanten zur Bezeichnung der Knoten des Syntaxbaumes
 
     final byte NO_TYPE = 0,
@@ -42,7 +42,9 @@ interface TokenList {
             FUNCTION_CALL = 28,
             LET = 29,
             IF = 30,
-            WHILE = 31;
+            WHILE = 31,
+            PARAMETER_LIST = 32,
+            DEF_OPERATOR = 33;
 
 
     // Konstante, die angibt, dass die Semantische Funktion eines Knotens

@@ -19,12 +19,12 @@ package ownCompiler;/*
 		    zu realisieren.	
 		    */
 
-class Semantic {
+public class Semantic {
 
     // Konstante, die angibt, dass die Semantische Funktion eines Knotens
     // undefiniert ist.
 
-    final int UNDEFINED = 0x10000001;
+    public static final int UNDEFINED = 0x10000001;
 
     // -------------------------------------------------------------------------
     // Die Semantsiche Funktion sei definiert als die Funktion f:P x Z->Z.
@@ -45,7 +45,7 @@ class Semantic {
     // -------------------------------------------------------------------------
 
     int f(SyntaxTree t, int n) {
-	return UNDEFINED;
+        return UNDEFINED;
     }// f
 
 }// professorstuff.Semantic
