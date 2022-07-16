@@ -139,6 +139,8 @@ class SyntaxTree implements TokenList {
 	    return "EXPRESSIN_LIST";
 	case 26:
 	    return "SEMICOLON";
+	case 34:
+	    return "STATEMENT";
 	default:
 	    return this.token + "";
 	}

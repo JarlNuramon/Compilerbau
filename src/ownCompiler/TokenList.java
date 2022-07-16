@@ -44,6 +44,7 @@ public interface TokenList {
             IF = 30,
             WHILE = 31,
             PARAMETER_LIST = 32,
+            STATEMENT = 34,
             DEF_OPERATOR = 33;
 
 

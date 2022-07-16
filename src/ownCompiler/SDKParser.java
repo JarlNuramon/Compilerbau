@@ -41,12 +41,23 @@ public class SDKParser extends SDKScanner {
 	    // program -> function program
 	    value = value && function(sT);
 	else
-	    value = value && expression(sT.insertSubtree(EXPRESSION)) && semicolon(sT);
+	    value = value && statement(sT);
 	if (pointer < maxPointer && value)
 	    value = value && program(sT);
 	return value;
 
     }// program
+
+    boolean statement(SyntaxTree sT) {
+	if (lookCurrent(CLOSE_METH) || lookCurrent(FUNCTION) || lookCurrent(((byte) EOF))) {
+	    return true;
+	}
+	SyntaxTree sub = sT.insertSubtree(STATEMENT);
+	if (expression(sub.insertSubtree(EXPRESSION)) && semicolon(sub))
+	    return statement(sT);
+	return false;
+
+    }
 
     private boolean function(SyntaxTree subtree) {
 	byte[] openParSet = { OPEN_PAR };
@@ -56,8 +67,7 @@ public class SDKParser extends SDKScanner {
 	if (match(subtree, openParSet)) {
 	    fun = fun && parameterlist(subtree.insertSubtree(PARAMETER_LIST));
 	    if (match(subtree, closeParSet))
-		return fun && funOpen(subtree) && expression(subtree.insertSubtree(EXPRESSION)) && semicolon(subtree)
-			&& funClose(subtree);
+		return fun && funOpen(subtree) && statement(subtree) && funClose(subtree);
 	    else {// Syntaxfehler
 		syntaxError("Geschlossene Parameter Klammer erwartet");
 		return false;
@@ -353,11 +363,14 @@ public class SDKParser extends SDKScanner {
 	return false;
     }
 
-    // -------------------------------------------------------------------------
-    // Methode, die testet, ob das auf das aktuelle Token folgende Token
-    // unter den Token ist, die als Parameter (aheadSet) übergeben wurden.
-    // Der Eingabepointer wird nicht verändert!
-    // -------------------------------------------------------------------------
+    boolean lookCurrent(byte... aheadSet) {
+
+	for (byte b : aheadSet)
+	    if (tokenStream.get(pointer).token.getToken() == b)
+		return true;
+	return false;
+    }
+
     boolean lookAhead(byte... aheadSet) {
 	if (pointer >= tokenStream.size() - 1)
 	    return false;
