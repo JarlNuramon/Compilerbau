@@ -4,23 +4,25 @@ public class ParserApplication {
 
     public static void main(String args[]) {
 
-	SyntaxTree parseTree = new SyntaxTree(TokenList.PROGRAM);
+        SyntaxTree parseTree = new SyntaxTree(TokenList.PROGRAM);
 
-	SDKParser parser = new SDKParser(parseTree);
+        SDKParser parser = new SDKParser(parseTree);
 
-	// Einlesen der Datei
-	if (parser.readInput("testdatei_arithmetik.txt"))
-	    if (parser.lexicalAnalysis()) {
-		parser.updatePointer();
-		if (parser.program(parseTree) && parser.inputEmpty()) {
-		    parseTree.printSyntaxTree(0);
-		    // codeGenerierer.generateCode(parseTree);
-		} else {
-		    System.out.println("Fehler im Ausdruck");
+        SDKCodeGen codeGenerierer = new SDKCodeGen();
 
-		    parseTree.printSyntaxTree(0);
-		}
-	    } else
-		System.out.println("Fehler in lexikalischer Analyse");
+        // Einlesen der Datei
+        if (parser.readInput("testdatei_arithmetik.txt"))
+            if (parser.lexicalAnalysis()) {
+                parser.updatePointer();
+                if (parser.program(parseTree) && parser.inputEmpty()) {
+                    parseTree.printSyntaxTree(0);
+                    codeGenerierer.generateCode(parseTree);
+                } else {
+                    System.out.println("Fehler im Ausdruck");
+
+                    parseTree.printSyntaxTree(0);
+                }
+            } else
+                System.out.println("Fehler in lexikalischer Analyse");
     }// main
 }
