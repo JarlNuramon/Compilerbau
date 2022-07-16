@@ -108,7 +108,7 @@ public abstract class Scanner implements TokenList {
     // Ist das der Fall, so gibt match() true zur�ck und setzt den Eingabe-
     // zeiger auf das n�chste Zeichen, sonst wird false zur�ckgegeben.
     // -------------------------------------------------------------------------
-    boolean match(String[] matchSet) {
+    boolean match(String... matchSet) {
 	for (String matchedToken : matchSet) {
 	    String compareCharacters = getComparison(matchedToken.length());
 	    if (compareCharacters.equals(matchedToken)) {
