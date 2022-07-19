@@ -7,8 +7,8 @@ import java.util.*;
  * created on 16.07.2022
  */
 public class SDKCodeGen {
-    private List<String> code = new ArrayList<>();
-    private Map<String, String> refs = new LinkedHashMap();
+    private final List<String> code = new ArrayList<>();
+    private final Map<String, String> refs = new LinkedHashMap<>();
     private int labelCounter = 1;
 
     List<String> generateCode(SyntaxTree syntaxTree) {
