@@ -35,21 +35,21 @@ public class SDKParser extends SDKScanner {
     }
 
     boolean program(SyntaxTree sT) {
-        byte[] funSet = {FUNCTION};
+        byte[] funSet = {FUN};
         boolean value = true;
-        if (match(true, sT, funSet))
+        if (lookCurrent(funSet)) {
             // program -> function program
-            value = value && function(sT);
-        else
+            value = value && function(sT.insertSubtree(FUNCTION));
+        } else
             value = value && statement(sT);
         if (pointer < maxPointer && value)
-            value = value && program(sT);
+            value = value && program(sT.insertSubtree(PROGRAM));
         return value;
 
     }// program
 
     boolean statement(SyntaxTree sT) {
-        if (lookCurrent(CLOSE_METH) || lookCurrent(FUNCTION) || lookCurrent(((byte) EOF))) {
+        if (lookCurrent(CLOSE_METH) || lookCurrent(((byte) EOF))) {
             return true;
         }
         SyntaxTree sub = sT.insertSubtree(STATEMENT);
@@ -63,7 +63,7 @@ public class SDKParser extends SDKScanner {
         byte[] openParSet = {OPEN_PAR};
         byte[] closeParSet = {CLOSE_PAR};
 
-        boolean fun = ident(subtree);
+        boolean fun = fun(subtree) && ident(subtree);
         if (match(true, subtree, openParSet)) {
             fun = fun && parameterlist(subtree.insertSubtree(PARAMETER_LIST));
             if (match(true, subtree, closeParSet))
@@ -90,7 +90,7 @@ public class SDKParser extends SDKScanner {
     }
 
     private boolean fun(SyntaxTree subtree) {
-        byte[] funSet = {FUNCTION};
+        byte[] funSet = {FUN};
 
         if (match(true, subtree, funSet))
             return true;

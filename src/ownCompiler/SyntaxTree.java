@@ -9,6 +9,7 @@ package ownCompiler;/*
 		       */
 
 import java.util.LinkedList;
+import java.util.Objects;
 
 class SyntaxTree implements TokenList {
     // Attribute
@@ -69,81 +70,51 @@ class SyntaxTree implements TokenList {
         for (int i = 0; i < t; i++)
             System.out.print("  ");
         System.out.print(this.getTokenString());
-        if (this.character != "")
-            System.out.println(":" + this.getCharacter());
+        if (!Objects.equals(this.character, ""))
+            System.out.println(": " + this.getCharacter());
         else
             System.out.println("");
-        for (int i = 0; i < this.childNodes.size(); i++) {
-            this.childNodes.get(i).printSyntaxTree(t + 1);
+        for (SyntaxTree childNode : this.childNodes) {
+            childNode.printSyntaxTree(t + 1);
         }
     }
 
     // Gibt den zum Zahlenwert passenden String des Tokentyps zur�ck
     String getTokenString() {
-        switch (this.token) {
-            case 0:
-                return "NO_TYPE";
-            case 9:
-                return "OPEN_PAR";
-            case 10:
-                return "CLOSE_PAR";
-            case 15:
-                return "EXPRESSION";
-            case 16:
-                return "RIGHT_EXPRESSION";
-            case 17:
-                return "TERM";
-            case 18:
-                return "RIGHT_TERM";
-            case 1:
-                return "NUMBER";
-            case 20:
-                return "OPERATOR";
-            case 7:
-                return "KOMMA";
-            case 3:
-                return "INPUT_SIGN";
-            case 4:
-                return "EPSILON";
-            case 11:
-                return "PLUS";
-            case 12:
-                return "MINUS";
-            case 13:
-                return "MULT";
-            case 14:
-                return "DIV";
-            case 8:
-                return "IDENT";
-            case 5:
-                return "START";
-            case 21:
-                return "PROGRAM";
-            case 22:
-                return "FUNCTION";
-            case 23:
-                return "OPEN_METH";
-            case 24:
-                return "CLOSE_METH";
-            case 25:
-                return "EQUAL";
-            case 29:
-                return "LET";
-            case 32:
-                return "PARAMETER_LIST";
-            case 33:
-                return "DEF_OPERATOR";
-            case 28:
-                return "FUNCTION_CALL";
-            case 27:
-                return "EXPRESSIN_LIST";
-            case 26:
-                return "SEMICOLON";
-            case 34:
-                return "STATEMENT";
-            default:
-                return this.token + "";
-        }
+        return switch (this.token) {
+            case 0 -> "NO_TYPE";
+            case 9 -> "OPEN_PAR";
+            case 10 -> "CLOSE_PAR";
+            case 15 -> "EXPRESSION";
+            case 16 -> "RIGHT_EXPRESSION";
+            case 17 -> "TERM";
+            case 18 -> "RIGHT_TERM";
+            case 1 -> "NUMBER";
+            case 20 -> "OPERATOR";
+            case 7 -> "KOMMA";
+            case 3 -> "INPUT_SIGN";
+            case 4 -> "EPSILON";
+            case 11 -> "PLUS";
+            case 12 -> "MINUS";
+            case 13 -> "MULT";
+            case 14 -> "DIV";
+            case 8 -> "IDENT";
+            case 5 -> "START";
+            case 21 -> "PROGRAM";
+            case 22 -> "FUNCTION";
+            case 23 -> "OPEN_METH";
+            case 24 -> "CLOSE_METH";
+            case 25 -> "EQUAL";
+            case 29 -> "LET";
+            case 32 -> "PARAMETER_LIST";
+            case 33 -> "DEF_OPERATOR";
+            case 28 -> "FUNCTION_CALL";
+            case 27 -> "EXPRESSIN_LIST";
+            case 26 -> "SEMICOLON";
+            case 34 -> "STATEMENT";
+            case 35 -> "FUN";
+            default -> this.token + "";
+        };
     }
 
     // Bestimmt und speichert die semantsiche Funktion des Kontens in
@@ -156,9 +127,7 @@ class SyntaxTree implements TokenList {
          * break; case 5: value=new professorstuff.Num(); break; case 6: value=new
          * professorstuff.Operator(); break; case 7: value=new Digit(); break;
          */
-            default:
-                value = new Semantic();
-                break;
+            default -> value = new Semantic();
         }
     }
 

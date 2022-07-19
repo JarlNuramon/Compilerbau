@@ -16,7 +16,8 @@ public class ParserApplication {
                 parser.updatePointer();
                 if (parser.program(parseTree) && parser.inputEmpty()) {
                     parseTree.printSyntaxTree(0);
-                    codeGenerierer.generateCode(parseTree);
+                    for (String s : codeGenerierer.generateCode(parseTree))
+                        System.out.println(s);
                 } else {
                     System.out.println("Fehler im Ausdruck");
 

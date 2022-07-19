@@ -34,6 +34,7 @@ public interface TokenList {
             OPERATOR = 20,
             PROGRAM = 21,
             FUNCTION = 22,
+            FUN = 35,
             OPEN_METH = 23,
             CLOSE_METH = 24,
             EQUAL = 25,

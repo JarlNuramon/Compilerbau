@@ -1,9 +1,5 @@
-fun main(let a, let b){
-    let c = a+b;
+fun main(let x){
+    let main = x*x;
 }
-main(1,2);
 
-fun x(let a, let b){
-    let c = a*b;
-}
-x(3,4);
+main(9);
