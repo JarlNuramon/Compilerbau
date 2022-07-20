@@ -1,5 +1,5 @@
 fun main(let x){
-    let main = x*x;
+    let main = x*x+3;
 }
 
 main(9);

@@ -75,7 +75,7 @@ public class SDKCodeGen {
                     code.add("MOVE R" + labelNumber);
                     code.add("GOTOSTACK");
                 }
-                case "STATEMENT" -> genExpressionCode(tree);
+                case "STATEMENT" -> genExpressionCode(tree.getChildNodes().get(0));
             }
     }
 
@@ -99,6 +99,7 @@ public class SDKCodeGen {
                 case "DIV" -> code.add("DIV");
                 case "PLUS" -> code.add("ADD");
                 case "MINUS" -> code.add("SUB");
+                case "NUMBER" -> code.add("LOAD " + tree.getCharacter());
             }
 
     }
