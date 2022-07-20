@@ -15,7 +15,9 @@ public class ParserApplication {
             if (parser.lexicalAnalysis()) {
                 parser.updatePointer();
                 if (parser.program(parseTree) && parser.inputEmpty()) {
+                    System.out.println();
                     parseTree.printSyntaxTree(0);
+                    System.out.println();
                     for (String s : codeGenerierer.generateCode(parseTree))
                         System.out.println(s);
                 } else {

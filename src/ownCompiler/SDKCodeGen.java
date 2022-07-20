@@ -9,6 +9,7 @@ import java.util.*;
 public class SDKCodeGen {
     private final List<String> code = new ArrayList<>();
     private final Map<String, String> refs = new LinkedHashMap<>();
+    private final Map<String, List<String>> params = new HashMap<>();
     private int labelCounter = 1;
 
     List<String> generateCode(SyntaxTree syntaxTree) {
@@ -33,15 +34,22 @@ public class SDKCodeGen {
 
     private void functionCall(SyntaxTree syntaxTree) {
         LinkedList<String> funCall = new LinkedList<>();
+        String functionName = "";
 
         String label = "L" + labelCounter++;
         funCall.add("LABEL " + label);
 
         for (SyntaxTree child : syntaxTree.getChildNodes())
             switch (child.getTokenString()) {
-                case "IDENT" -> funCall.add("GOTO " + refs.get(child.getCharacter()));
+                case "IDENT" -> {
+                    functionName = child.getCharacter();
+                    funCall.add("GOTO " + refs.get(child.getCharacter()));
+                }
                 case "EXPRESSION_LIST" -> funCall.addAll(reverseList(expressionList(child)));
             }
+
+        for (String param : reverseList(params.get(functionName)))
+            funCall.add(posInRefs(param) + ".idplace.value");
 
         funCall.add("MOVE " + label);
         code.addAll(reverseList(funCall));
@@ -81,11 +89,13 @@ public class SDKCodeGen {
                 case "IDENT" -> {
                     functionName = tree.getCharacter();
                     refs.put(functionName, label);
+                    params.put(functionName, new ArrayList<>());
                 }
                 case "PARAMETER_LIST" -> {
                     parameterList = parameterList(tree);
                     for (SyntaxTree parameter : parameterList) {
                         code.add("STACKTOP " + posInRefs(parameter.getCharacter()) + ".idplace");
+                        params.get(functionName).add(parameter.getCharacter());
                     }
                 }
                 case "CLOSE_METH" -> {
