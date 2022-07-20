@@ -109,7 +109,7 @@ class SyntaxTree implements TokenList {
             case 32 -> "PARAMETER_LIST";
             case 33 -> "DEF_OPERATOR";
             case 28 -> "FUNCTION_CALL";
-            case 27 -> "EXPRESSIN_LIST";
+            case 27 -> "EXPRESSION_LIST";
             case 26 -> "SEMICOLON";
             case 34 -> "STATEMENT";
             case 35 -> "FUN";

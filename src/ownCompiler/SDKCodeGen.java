@@ -13,6 +13,7 @@ public class SDKCodeGen {
 
     List<String> generateCode(SyntaxTree syntaxTree) {
         _generateCode(syntaxTree);
+        code.add("HALT");
         return code;
     }
 
@@ -22,8 +23,7 @@ public class SDKCodeGen {
         List<SyntaxTree> child = new ArrayList<>();
         switch (syntaxTree.getTokenString()) {
             case "FUNCTION" -> function(syntaxTree);
-            case "FUNCTION_CALL" -> functionCall(syntaxTree);
-            case "EXPRESSION" -> genExpressionCode(syntaxTree);
+            case "EXPRESSION" -> code.addAll(genExpressionCode(syntaxTree));
             default -> child = syntaxTree.getChildNodes();
         }
 
@@ -32,6 +32,30 @@ public class SDKCodeGen {
     }
 
     private void functionCall(SyntaxTree syntaxTree) {
+        LinkedList<String> funCall = new LinkedList<>();
+
+        String label = "L" + labelCounter++;
+        funCall.add("LABEL " + label);
+
+        for (SyntaxTree child : syntaxTree.getChildNodes())
+            switch (child.getTokenString()) {
+                case "IDENT" -> funCall.add("GOTO " + refs.get(child.getCharacter()));
+                case "EXPRESSION_LIST" -> funCall.addAll(reverseList(expressionList(child)));
+            }
+
+        funCall.add("MOVE " + label);
+        code.addAll(reverseList(funCall));
+    }
+
+    private List<String> expressionList(SyntaxTree syntaxTree) {
+        List<String> expressionListCode = new ArrayList<>();
+
+        for (SyntaxTree child : syntaxTree.getChildNodes())
+            switch (syntaxTree.getTokenString()) {
+                case "EXPRESSION" -> expressionListCode.addAll(genExpressionCode(child));
+                case "EXPRESSION_LIST" -> expressionListCode.addAll(expressionList(child));
+            }
+        return expressionListCode;
     }
 
     private int posInRefs(String character) {
@@ -75,11 +99,12 @@ public class SDKCodeGen {
                     code.add("MOVE R" + labelNumber);
                     code.add("GOTOSTACK");
                 }
-                case "STATEMENT" -> genExpressionCode(tree.getChildNodes().get(0));
+                case "STATEMENT" -> code.addAll(genExpressionCode(tree.getChildNodes().get(0)));
             }
     }
 
-    private void genExpressionCode(SyntaxTree syntaxTree) {
+    private List<String> genExpressionCode(SyntaxTree syntaxTree) {
+        List<String> expressionCode = new ArrayList<>();
         String lastIdent = "";
         for (SyntaxTree tree : expression(syntaxTree))
             switch (tree.getTokenString()) {
@@ -88,20 +113,20 @@ public class SDKCodeGen {
                     if (!refs.containsKey(tree.getCharacter()))
                         refs.put(tree.getCharacter(), null);
                     int ref = posInRefs(tree.getCharacter());
-                    code.add("LOAD " + ref + ".idplace.value.value");
+                    expressionCode.add("LOAD " + ref + ".idplace.value.value");
                 }
                 case "EQUAL" -> {
-                    code.remove(code.size() - 1);
+                    expressionCode.remove(expressionCode.size() - 1);
                     int ref = posInRefs(lastIdent);
-                    code.add("STORE " + ref + ".idplace.value");
+                    expressionCode.add("STORE " + ref + ".idplace.value");
                 }
-                case "MULT" -> code.add("MUL");
-                case "DIV" -> code.add("DIV");
-                case "PLUS" -> code.add("ADD");
-                case "MINUS" -> code.add("SUB");
-                case "NUMBER" -> code.add("LOAD " + tree.getCharacter());
+                case "MULT" -> expressionCode.add("MUL");
+                case "DIV" -> expressionCode.add("DIV");
+                case "PLUS" -> expressionCode.add("ADD");
+                case "MINUS" -> expressionCode.add("SUB");
+                case "NUMBER" -> expressionCode.add("LOAD " + tree.getCharacter());
             }
-
+        return expressionCode;
     }
 
     private List<SyntaxTree> parameterList(SyntaxTree syntaxTree) {
@@ -152,22 +177,23 @@ public class SDKCodeGen {
         List<SyntaxTree> list = new ArrayList<>();
 
         String tokenStr = syntaxTree.getTokenString();
-        if (tokenStr.equals("EPSILON") || tokenStr.equals("LET") || tokenStr.equals("FUNCTION_CALL")) return list;
-        else if (!syntaxTree.getCharacter().isEmpty())
+        if (tokenStr.equals("EPSILON") || tokenStr.equals("LET")) return list;
+        else if (tokenStr.equals("FUNCTION_CALL")) {
+            functionCall(syntaxTree);
+            return list;
+        } else if (!syntaxTree.getCharacter().isEmpty())
             list.add(syntaxTree);
 
-        List<SyntaxTree> child = reverseLinkedList(syntaxTree.getChildNodes());
+        List<SyntaxTree> child = reverseList(syntaxTree.getChildNodes());
         for (SyntaxTree tree : child)
             list.addAll(term(tree));
 
         return list;
     }
 
-    private List<SyntaxTree> reverseLinkedList(LinkedList<SyntaxTree> list) {
-        LinkedList<SyntaxTree> reverseList = new LinkedList<>();
-        for (int i = list.size() - 1; i >= 0; i--) {
-            reverseList.add(list.get(i));
-        }
+    private <T> List<T> reverseList(List<T> list) {
+        List<T> reverseList = new ArrayList<>(list);
+        Collections.reverse(reverseList);
         return reverseList;
     }
 }
