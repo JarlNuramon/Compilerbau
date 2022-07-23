@@ -1,5 +1,23 @@
 fun main(let x, let y){
     let main = 3+x*x;
+  
+}
+if(x==2){
+x=2;
+}
+while(x==2){
+x=2;
+x=2;
+x=2;
+x=2;
+x=2;
+x=2;
+x=2;
+}
+main(9,6);
+fun x(let x, let y){
+let main = 3+x*x;
+x=2;  
 }
 
-main(9, 8);
+x(9, 8);

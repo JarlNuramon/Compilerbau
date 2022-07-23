@@ -18,7 +18,7 @@ public class ParserApplication {
                     System.out.println();
                     parseTree.printSyntaxTree(0);
                     System.out.println();
-                    for (String s : codeGenerierer.generateCode(parseTree))
+                    for (String s : codeGenerierer.generatePseudoCode(parseTree))
                         System.out.println(s);
                 } else {
                     System.out.println("Fehler im Ausdruck");
