@@ -1,236 +1,278 @@
 package ownCompiler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * @author Narwutsch Dominic created on 16.07.2022
  */
 public class SDKCodeGen implements TokenList {
-	private final List<String> code = new ArrayList<>();
-	private final Map<String, String> refs = new LinkedHashMap<>();
-	private final Map<String, List<String>> params = new HashMap<>();
-	private int labelCounter = 1;
+    private final List<String> code = new ArrayList<>();
+    private final Map<String, String> refs = new LinkedHashMap<>();
+    private final Map<String, String> functionRefs = new HashMap<>();
+    private final Map<String, List<String>> params = new HashMap<>();
+    private int labelCounter = 1;
 
-	List<String> generatePseudoCode(SyntaxTree syntaxTree) {
-		generateCode(syntaxTree);
-		code.add("HALT");
-		return code;
-	}
+    List<String> generatePseudoCode(SyntaxTree syntaxTree) {
+        HashMap<String, String> scope = new HashMap<>();
+        generateCode(syntaxTree, scope);
+        code.add("HALT");
+        return code;
+    }
 
-	private void generateCode(SyntaxTree syntaxTree) {
-		if (syntaxTree.getToken() == EPSILON)
-			return;
+    private void generateCode(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        if (syntaxTree.getToken() == EPSILON)
+            return;
 
-		List<SyntaxTree> child = new ArrayList<>();
-		switch (syntaxTree.getToken()) {
-			case FUNCTION -> function(syntaxTree);
-			case EXPRESSION -> code.addAll(genExpressionCode(syntaxTree));
-			default -> child = syntaxTree.getChildNodes();
-		}
+        List<SyntaxTree> child = new ArrayList<>();
+        switch (syntaxTree.getToken()) {
+            case FUNCTION -> function(syntaxTree, new HashMap<>(scope));
+            case EXPRESSION -> code.addAll(genExpressionCode(syntaxTree, scope, null));
+            case WHILE_STATEMENT -> whileStatement(syntaxTree, new HashMap<>(scope));
+            default -> child = syntaxTree.getChildNodes();
+        }
 
-		for (SyntaxTree tree : child)
-			generateCode(tree);
+        for (SyntaxTree tree : child)
+            generateCode(tree, scope);
+    }
 
-	}
+    private void whileStatement(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        LinkedList<String> whileStmnt = new LinkedList<>();
 
-	private void functionCall(SyntaxTree syntaxTree) {
-		LinkedList<String> funCall = new LinkedList<>();
-		String functionName = "";
+        String label = "L" + labelCounter++;
+        whileStmnt.add("LABEL " + label);
 
-		String label = "L" + labelCounter++;
-		funCall.add("LABEL " + label);
+        String outLabel = "L" + labelCounter++;
 
-		functionName = createPostfixAnnotitation(syntaxTree, funCall,
-				functionName);
+        switch (syntaxTree.getToken()) {
+            case EXPRESSION -> {
+            }
+        }
+    }
 
-		for (String param : reverseList(params.get(functionName)))
-			funCall.add(posInRefs(param) + ".idplace.value");
+    private void functionCall(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        LinkedList<String> funCall = new LinkedList<>();
+        String functionName = "";
 
-		funCall.add("MOVE " + label);
-		code.addAll(reverseList(funCall));
-	}
+        String label = "L" + labelCounter++;
+        funCall.add("LABEL " + label);
 
-	private String createPostfixAnnotitation(SyntaxTree syntaxTree,
-			LinkedList<String> funCall, String functionName) {
-		for (SyntaxTree child : syntaxTree.getChildNodes())
-			switch (child.getToken()) {
-				case IDENT -> {
-					functionName = child.getCharacter();
-					funCall.add("GOTO " + refs.get(child.getCharacter()));
-				}
-				case EXPRESSION_LIST -> funCall
-						.addAll(reverseList(expressionList(child)));
-			}
-		return functionName;
-	}
+        functionName = createPostfixAnnotitation(syntaxTree, scope, funCall,
+                functionName);
 
-	private List<String> expressionList(SyntaxTree syntaxTree) {
-		List<String> expressionListCode = new ArrayList<>();
+        for (String param : reverseList(params.get(functionName))) {
+            funCall.add(posInRefs(param) + ".idplace.value");
+        }
 
-		for (SyntaxTree child : syntaxTree.getChildNodes())
-			switch (syntaxTree.getToken()) {
-				case EXPRESSION -> expressionListCode
-						.addAll(genExpressionCode(child));
-				case EXPRESSION_LIST -> expressionListCode
-						.addAll(expressionList(child));
-			}
-		return expressionListCode;
-	}
+        funCall.add("MOVE " + label);
+        code.addAll(reverseList(funCall));
+    }
 
-	private int posInRefs(String character) {
-		if (refs.containsKey(character)) {
-			int pos = 0;
-			for (String key : refs.keySet()) {
-				if (key.equals(character))
-					return pos;
-				pos++;
-			}
-		}
-		return -1;
-	}
+    private String createPostfixAnnotitation(
+            SyntaxTree syntaxTree,
+            HashMap<String, String> scope,
+            LinkedList<String> funCall,
+            String functionName
+    ) {
+        for (SyntaxTree child : syntaxTree.getChildNodes())
+            switch (child.getToken()) {
+                case IDENT -> {
+                    functionName = child.getCharacter();
+                    String fun = functionRefs.get(child.getCharacter());
+                    funCall.add("GOTO " + refs.get(fun));
+                }
+                case EXPRESSION_LIST -> funCall
+                        .addAll(reverseList(expressionList(child, scope)));
+            }
+        return functionName;
+    }
 
-	private void function(SyntaxTree syntaxTree) {
-		String functionName = "";
+    private List<String> expressionList(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        List<String> expressionListCode = new ArrayList<>();
 
-		String label = "L" + labelCounter++;
-		code.add("LABEL " + label);
+        for (SyntaxTree child : syntaxTree.getChildNodes())
+            switch (syntaxTree.getToken()) {
+                case EXPRESSION -> expressionListCode
+                        .addAll(genExpressionCode(child, scope, null));
+                case EXPRESSION_LIST -> expressionListCode
+                        .addAll(expressionList(child, scope));
+            }
+        return expressionListCode;
+    }
 
-		List<SyntaxTree> parameterList = new ArrayList<>();
-		for (SyntaxTree tree : syntaxTree.getChildNodes())
-			switch (tree.getToken()) {
-				case IDENT -> {
-					functionName = tree.getCharacter();
-					refs.put(functionName, label);
-					params.put(functionName, new ArrayList<>());
-				}
-				case PARAMETER_LIST -> {
-					parameterList = parameterList(tree);
-					for (SyntaxTree parameter : parameterList) {
-						code.add("STACKTOP "
-								+ posInRefs(parameter.getCharacter())
-								+ ".idplace");
-						params.get(functionName).add(parameter.getCharacter());
-					}
-				}
-				case CLOSE_METH -> {
-					for (int i = 0; i < parameterList.size(); i++)
-						code.add("POP");
-					for (SyntaxTree parameter : parameterList)
-						code.add("STORE " + posInRefs(parameter.getCharacter())
-								+ ".idplace.value");
-					String labelNumber = label.substring(1);
-					code.add("POP R" + labelNumber);
-					code.add("LOAD " + posInRefs(functionName)
-							+ ".idplace.value");
-					code.add("MOVE R" + labelNumber);
-					code.add("GOTOSTACK");
-				}
-				case STATEMENT -> code
-						.addAll(genExpressionCode(tree.getChildNodes().get(0)));
-			}
-	}
+    private int posInRefs(String character) {
+        if (refs.containsKey(character)) {
+            int pos = 0;
+            for (String key : refs.keySet()) {
+                if (key.equals(character))
+                    return pos;
+                pos++;
+            }
+        }
+        return -1;
+    }
 
-	private List<String> genExpressionCode(SyntaxTree syntaxTree) {
-		List<String> expressionCode = new ArrayList<>();
-		String lastIdent = "";
-		for (SyntaxTree tree : expression(syntaxTree))
-			switch (tree.getToken()) {
-				case IDENT -> {
-					lastIdent = tree.getCharacter();
-					if (!refs.containsKey(tree.getCharacter()))
-						refs.put(tree.getCharacter(), null);
-					int ref = posInRefs(tree.getCharacter());
-					expressionCode.add("LOAD " + ref + ".idplace.value.value");
-				}
-				case EQUAL -> {
-					expressionCode.remove(expressionCode.size() - 1);
-					int ref = posInRefs(lastIdent);
-					expressionCode.add("STORE " + ref + ".idplace.value");
-				}
-				case MULT -> expressionCode.add("MUL");
-				case DIV -> expressionCode.add("DIV");
-				case PLUS -> expressionCode.add("ADD");
-				case MINUS -> expressionCode.add("SUB");
-				case NUM -> expressionCode.add("LOAD " + tree.getCharacter());
-			}
-		return expressionCode;
-	}
+    private void function(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        String functionName = "";
+        AtomicReference<String> lastEquation = new AtomicReference<>(null);
 
-	private List<SyntaxTree> parameterList(SyntaxTree syntaxTree) {
-		List<SyntaxTree> list = new ArrayList<>();
+        String label = "L" + labelCounter++;
+        code.add("LABEL " + label);
 
-		byte token = syntaxTree.getToken();
-		if (token == LET || token == KOMMA || token == EPSILON)
-			return list;
-		else if (token == IDENT) {
-			refs.put(syntaxTree.getCharacter(), null);
-			list.add(syntaxTree);
-		}
+        Map<String, String> parameterList = new HashMap<>();
+        for (SyntaxTree tree : syntaxTree.getChildNodes())
+            switch (tree.getToken()) {
+                case IDENT -> {
+                    functionName = tree.getCharacter();
+                    functionRefs.put(functionName, "label" + refs.size());
+                    refs.put("label" + refs.size(), label);
+                    params.put(functionName, new ArrayList<>());
+                }
+                case PARAMETER_LIST -> {
+                    parameterList = parameterList(tree, scope);
+                    for (String parameter : parameterList.values()) {
+                        code.add("STACKTOP "
+                                + posInRefs(parameter)
+                                + ".idplace");
+                        params.get(functionName).add(parameter);
+                    }
+                }
+                case CLOSE_METH -> {
+                    for (int i = 0; i < parameterList.size(); i++)
+                        code.add("POP");
+                    for (String parameter : parameterList.values()) {
+                        code.add("STORE " + posInRefs(parameter)
+                                + ".idplace.value");
+                    }
+                    String labelNumber = label.substring(1);
+                    code.add("POP R" + labelNumber);
+                    code.add("LOAD " + posInRefs(lastEquation.get())
+                            + ".idplace.value");
+                    code.add("MOVE R" + labelNumber);
+                    code.add("GOTOSTACK");
+                }
+                case STATEMENT -> code
+                        .addAll(genExpressionCode(tree.getChildNodes().get(0), scope, lastEquation::set));
+            }
+    }
 
-		List<SyntaxTree> child = syntaxTree.getChildNodes();
-		for (SyntaxTree tree : child)
-			list.addAll(parameterList(tree));
+    private List<String> genExpressionCode(SyntaxTree syntaxTree, HashMap<String, String> scope, Consumer<String> o) {
+        List<String> expressionCode = new ArrayList<>();
+        String lastIdent = "";
+        for (SyntaxTree tree : expression(syntaxTree, scope))
+            switch (tree.getToken()) {
+                case IDENT -> {
+                    lastIdent = tree.getCharacter();
+                    String par = scope.get(tree.getCharacter());
+                    int ref = posInRefs(par);
+                    expressionCode.add("LOAD " + ref + ".idplace.value.value");
+                }
+                case EQUAL -> {
+                    expressionCode.remove(expressionCode.size() - 1);
+                    String par = scope.get(lastIdent);
+                    int ref = posInRefs(par);
+                    expressionCode.add("STORE " + ref + ".idplace.value");
+                    if (o != null) o.accept(par);
+                }
+                case MULT -> expressionCode.add("MUL");
+                case DIV -> expressionCode.add("DIV");
+                case PLUS -> expressionCode.add("ADD");
+                case MINUS -> expressionCode.add("SUB");
+                case DIGIT -> expressionCode.add("LOAD " + tree.getCharacter());
+            }
+        return expressionCode;
+    }
 
-		return list;
-	}
+    private Map<String, String> parameterList(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        Map<String, String> list = new HashMap<>();
 
-	private List<SyntaxTree> expression(SyntaxTree syntaxTree) {
-		List<SyntaxTree> list = new ArrayList<>();
+        byte token = syntaxTree.getToken();
+        if (token == LET || token == KOMMA || token == EPSILON)
+            return list;
+        else if (token == IDENT) {
+            String ident = "label" + refs.size();
+            scope.put(syntaxTree.getCharacter(), ident);
+            refs.put(ident, null);
+            list.put(syntaxTree.getCharacter(), ident);
+        }
 
-		List<SyntaxTree> child = syntaxTree.getChildNodes();
-		for (SyntaxTree tree : child)
-			list.addAll(term(tree));
+        List<SyntaxTree> child = syntaxTree.getChildNodes();
+        for (SyntaxTree tree : child)
+            list.putAll(parameterList(tree, scope));
 
-		for (int i = 0; i < list.size() - 1; i++) {
-			String item = list.get(i).getCharacter();
-			if (item.equals("*") || item.equals("/") || item.equals("+")
-					|| item.equals("-"))
-				Collections.swap(list, i, ++i);
-		}
+        return list;
+    }
 
-		List<String> charList = list.stream().map(SyntaxTree::getCharacter)
-				.toList();
-		if (charList.contains("=")) {
-			int index = charList.indexOf("=");
-			SyntaxTree assign = list.get(index);
-			list.remove(index);
-			SyntaxTree ident = list.get(index);
-			list.remove(index);
-			list.add(ident);
-			list.add(assign);
-		}
+    private List<SyntaxTree> expression(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        List<SyntaxTree> list = new ArrayList<>();
 
-		return list;
-	}
+        List<SyntaxTree> child = syntaxTree.getChildNodes();
+        for (SyntaxTree tree : child)
+            list.addAll(term(tree, scope));
 
-	private List<SyntaxTree> term(SyntaxTree syntaxTree) {
-		List<SyntaxTree> list = new ArrayList<>();
+        for (int i = 0; i < list.size() - 1; i++) {
+            String item = list.get(i).getCharacter();
+            if (item.equals("*") || item.equals("/") || item.equals("+")
+                    || item.equals("-"))
+                Collections.swap(list, i, ++i);
+        }
 
-		byte token = syntaxTree.getToken();
-		if (token == EPSILON || token == LET)
-			return list;
-		else if (token == FUNCTION_CALL) {
-			functionCall(syntaxTree);
-			return list;
-		} else if (!syntaxTree.getCharacter().isEmpty())
-			list.add(syntaxTree);
+        List<String> charList = list.stream().map(SyntaxTree::getCharacter)
+                .toList();
+        if (charList.contains("=")) {
+            int index = charList.indexOf("=");
+            SyntaxTree assign = list.get(index);
+            list.remove(index);
+            SyntaxTree ident = list.get(index);
+            list.remove(index);
+            list.add(ident);
+            list.add(assign);
+        }
 
-		List<SyntaxTree> child = reverseList(syntaxTree.getChildNodes());
-		for (SyntaxTree tree : child)
-			list.addAll(term(tree));
+        return list;
+    }
 
-		return list;
-	}
+    private List<SyntaxTree> term(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        List<SyntaxTree> list = new ArrayList<>();
 
-	private <T> List<T> reverseList(List<T> list) {
-		List<T> reverseList = new ArrayList<>(list);
-		Collections.reverse(reverseList);
-		return reverseList;
-	}
+        byte token = syntaxTree.getToken();
+        if (token == EPSILON || token == LET)
+            return list;
+        else if (token == DEF_OPERATOR) {
+            list.addAll(createSymbol(syntaxTree, scope));
+            return list;
+        } else if (token == FUNCTION_CALL) {
+            functionCall(syntaxTree, scope);
+            return list;
+        } else if (!syntaxTree.getCharacter().isEmpty())
+            list.add(syntaxTree);
+
+        List<SyntaxTree> child = reverseList(syntaxTree.getChildNodes());
+        for (SyntaxTree tree : child)
+            list.addAll(term(tree, scope));
+
+        return list;
+    }
+
+    private List<SyntaxTree> createSymbol(SyntaxTree tree, HashMap<String, String> scope) {
+        List<SyntaxTree> list = new ArrayList<>();
+
+        if (tree.getToken() == IDENT) {
+            String label = "label" + refs.size();
+            scope.put(tree.getCharacter(), label);
+            refs.put(label, null);
+            list.add(tree);
+        }
+
+        for (SyntaxTree chlid : tree.getChildNodes())
+            list.addAll(createSymbol(chlid, scope));
+        return list;
+    }
+
+    private <T> List<T> reverseList(List<T> list) {
+        List<T> reverseList = new ArrayList<>(list);
+        Collections.reverse(reverseList);
+        return reverseList;
+    }
 }
