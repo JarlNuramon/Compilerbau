@@ -789,7 +789,7 @@ public enum State {
             new String[]{},
             new String[]{},
             new String[]{},
-            new String[]{},
+            new String[]{"="},
             new String[]{});
 
     private final int prio;

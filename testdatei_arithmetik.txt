@@ -1,9 +1,6 @@
-let main = 5;
-
-fun main(let x){
-    main = 7;
-    let main = 3+x*x;
-    main = 9;
+fun main(let x) {
+    let main = 0;
+    while(main <= 5) {
+        main = main + 1;
+    }
 }
-
-main = 11;
