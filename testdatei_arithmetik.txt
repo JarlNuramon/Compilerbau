@@ -1,6 +1,6 @@
 fun main(let x) {
     let main = 0;
-    while(main <= 5) {
-        main = main + 1;
+    if(main == 1) {
+        main = 5;
     }
 }

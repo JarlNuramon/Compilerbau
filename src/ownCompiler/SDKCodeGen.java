@@ -30,6 +30,7 @@ public class SDKCodeGen implements TokenList {
             case FUNCTION -> function(syntaxTree, new HashMap<>(scope));
             case EXPRESSION -> code.addAll(genExpressionCode(syntaxTree, scope, null));
             case WHILE_STATEMENT -> code.addAll(whileStatement(syntaxTree, new HashMap<>(scope)));
+            case IF_STATEMENT -> code.addAll(ifStatement(syntaxTree, new HashMap<>(scope)));
             default -> child = syntaxTree.getChildNodes();
         }
 
@@ -37,8 +38,37 @@ public class SDKCodeGen implements TokenList {
             generateCode(tree, scope);
     }
 
+    private Collection<String> IfWhileStatement(SyntaxTree syntaxTree, HashMap<String, String> scope, String outLabel) {
+        LinkedList<String> boolStmnt = new LinkedList<>();
+
+        for (SyntaxTree child : syntaxTree.getChildNodes()) {
+            switch (child.getToken()) {
+                case EXPRESSION -> {
+                    boolStmnt.addAll(boolStatement(syntaxTree, scope));
+                    boolStmnt.add("GOFALSE " + outLabel);
+                }
+                case STATEMENT -> {
+                    if (!child.getChildNodes().isEmpty()) {
+                        boolStmnt.addAll(genExpressionCode(child.getChildNodes().get(0), scope, null));
+                    }
+                }
+            }
+        }
+
+        return boolStmnt;
+    }
+
+    private Collection<String> ifStatement(SyntaxTree syntaxTree, HashMap<String, String> scope) {
+        String outLabel = "L" + labelCounter++;
+
+        LinkedList<String> ifStmnt = new LinkedList<>(IfWhileStatement(syntaxTree, scope, outLabel));
+
+        ifStmnt.add("LABEL " + outLabel);
+
+        return ifStmnt;
+    }
+
     private LinkedList<String> whileStatement(SyntaxTree syntaxTree, HashMap<String, String> scope) {
-        System.out.println(syntaxTree.getTokenString());
         LinkedList<String> whileStmnt = new LinkedList<>();
 
         String label = "L" + labelCounter++;
@@ -46,19 +76,7 @@ public class SDKCodeGen implements TokenList {
 
         String outLabel = "L" + labelCounter++;
 
-        for (SyntaxTree child : syntaxTree.getChildNodes()) {
-            switch (child.getToken()) {
-                case EXPRESSION -> {
-                    whileStmnt.addAll(boolStatement(syntaxTree, scope));
-                    whileStmnt.add("GOFALSE " + outLabel);
-                }
-                case STATEMENT -> {
-                    if (!child.getChildNodes().isEmpty()) {
-                        whileStmnt.addAll(genExpressionCode(child.getChildNodes().get(0), scope, null));
-                    }
-                }
-            }
-        }
+        whileStmnt.addAll(IfWhileStatement(syntaxTree, scope, outLabel));
 
         whileStmnt.add("GOTO " + label);
         whileStmnt.add("LABEL " + outLabel);
@@ -202,6 +220,7 @@ public class SDKCodeGen implements TokenList {
                             .addAll(genExpressionCode(tree.getChildNodes().get(0), scope, lastEquation::set));
                 }
                 case WHILE_STATEMENT -> code.addAll(whileStatement(tree, new HashMap<>(scope)));
+                case IF_STATEMENT -> code.addAll(ifStatement(tree, new HashMap<>(scope)));
             }
     }
 
