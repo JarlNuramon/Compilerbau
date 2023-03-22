@@ -1,4 +1,4 @@
-package ownCompiler;/*
+package sdk.model;/*
 		    professorstuff.Semantic.java
 		    
 		    Praktikum Algorithmen und Datenstrukturen

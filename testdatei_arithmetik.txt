@@ -1,6 +1,26 @@
-fun main(let x) {
-    let main = 0;
-    if(main == 1) {
-        main = 5;
-    }
+fun calculator(let x, let y, let mode) {
+  let ergebnisMeth = 0;
+  if(mode == 1) {
+       ergebnisMeth = x*y;
+  }
+  if(mode == 2) {
+      ergebnisMeth = x+y;
+  }
+  if(mode == 3) {
+      ergebnisMeth = x/y;
+  }
+  if(mode == 4) {
+      ergebnisMeth = x-y;
+  }
 }
+let ergebnis = calculator(3,2,1); 
+log(ergebnis);
+
+ergebnis = calculator(3,2,2); 
+log(ergebnis);
+
+ergebnis = calculator(3,2,3); 
+log(ergebnis);
+
+ergebnis = calculator(3,2,4); 
+log(ergebnis);

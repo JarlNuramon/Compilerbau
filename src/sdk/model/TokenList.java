@@ -1,4 +1,4 @@
-package ownCompiler;/*
+package sdk.model;/*
 					interface professorstuff.TokenList
 					
 					Praktikum Algorithmen und Datenstrukturen
